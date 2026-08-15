@@ -1,0 +1,23 @@
+# Deployed on its own box with its own virtualenv — deliberately NOT in the
+# backend's requirements.txt. The Django side only ever speaks HTTP to this
+# service, and that separation is what keeps the AGPL obligation confined to
+# this directory.
+fastapi==0.115.6
+uvicorn[standard]==0.34.0
+pillow==11.1.0
+
+# ⚠️ AGPL-3.0, and chosen deliberately. It is the only detector that reports
+# WHICH body part and whether it is COVERED — the distinction between a
+# shirtless deadlift and pornography, which is most of this app's content.
+# The cost of keeping it is publishing this directory; see LICENSE.
+nudenet==3.4.2
+onnxruntime==1.20.1
+
+# Optional second opinion, OFF by default (CONTENT_SCAN_SECOND_OPINION=1).
+# MIT, code and weights. It was built when the detector above looked
+# unusable and the taxonomy had to be reconstructed from prompts; kept because
+# it is a useful tuning lever if the part labels prove insufficient on real
+# photos, but it is redundant while they hold.
+transformers==4.48.0
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.5.1
