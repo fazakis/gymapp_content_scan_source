@@ -1,25 +1,24 @@
-"""The taxonomy, written as sentences.
+"""Optional fitness-specific prompts for ambiguous detector scores.
 
 ## Why this exists
 
-The original design used a part-level detector whose labels distinguished
+The primary detector uses part-level labels that distinguish
 *covered* from *exposed* — the difference between a shirtless deadlift and
-pornography, which is most of this app's content. That detector was AGPL-3.0
-and unusable commercially, and every permissive replacement is a single-score
-classifier with no taxonomy at all.
+pornography, which is most of this app's content. We deliberately kept that
+AGPL-3.0 detector under Option A and publish this service's corresponding
+source.
 
-CLIP gets it back, and gets back something better: it scores an image against
-**arbitrary text**, so the categories are ours to write rather than someone
-else's to inherit. No off-the-shelf detector has a label for "a bodybuilder
-posing in competition trunks" — and that is exactly the case that was going to
-hurt us.
+CLIP is retained as an optional second opinion because it scores an image
+against **arbitrary text**. It can ask a narrower, fitness-specific question
+when a part-level `explicit` score sits in the ambiguous band. It does not
+replace the primary label mapping and is off by default.
 
 ## How it is used
 
-NOT on every upload. The single-score classifier is the cheap first pass; this
-runs only on what that pass could not call — a few percent of images. So the
-expensive model touches almost nothing, and its worst failure mode is sending
-something to human review, which is where it was already going.
+NOT on every upload. The part-level detector is the first pass; this runs only
+on an ambiguous `explicit` score — a few percent of images. It can lower that
+score when a fitness-specific prompt explains the image, but it cannot create
+a removal the primary detector did not already suspect.
 
 ## Tuning
 

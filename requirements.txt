@@ -13,11 +13,7 @@ pillow==11.1.0
 nudenet==3.4.2
 onnxruntime==1.20.1
 
-# Optional second opinion, OFF by default (CONTENT_SCAN_SECOND_OPINION=1).
-# MIT, code and weights. It was built when the detector above looked
-# unusable and the taxonomy had to be reconstructed from prompts; kept because
-# it is a useful tuning lever if the part labels prove insufficient on real
-# photos, but it is redundant while they hold.
-transformers==4.48.0
---extra-index-url https://download.pytorch.org/whl/cpu
-torch==2.5.1
+# The optional CLIP second opinion is deliberately absent from the default
+# environment. Install requirements-second-opinion.txt as well only when the
+# corresponding image is explicitly requested; keeping it here made an
+# off-by-default feature consume several GB in every build and runtime image.

@@ -50,7 +50,7 @@ MODEL_ID = os.environ.get('CONTENT_SCAN_MODEL', 'nudenet')
 # reaching the API can see.
 SOURCE_URL = os.environ.get(
     'CONTENT_SCAN_SOURCE_URL',
-    'https://github.com/fazakis/orizo-content-scan',
+    'https://github.com/fazakis/gymapp_content_scan',
 )
 
 
@@ -94,9 +94,9 @@ def clip():
 def second_opinion(image) -> float | None:
     """Score the image against our own prompts. None if it could not be done.
 
-    This is where the taxonomy lives now: the prompts describe OUR content --
-    shirtless lifting, sports bras, competition trunks -- which no off-the-shelf
-    label set covers. See prompts.py.
+    The primary taxonomy remains the detector's exposed/covered body-part
+    labels. These prompts are an optional fitness-specific tiebreaker for an
+    ambiguous explicit score. See prompts.py.
     """
     try:
         import torch
@@ -134,10 +134,16 @@ def health():
 
 @app.get('/ready')
 def ready():
-    """Readiness — loads the model, so a load balancer waits for a box that can
-    actually answer rather than one that has merely started."""
+    """Load every configured model before accepting traffic.
+
+    In particular, setting CONTENT_SCAN_SECOND_OPINION on the default image is
+    a deployment error. Readiness exposes the missing optional dependencies or
+    weights instead of claiming success and silently degrading every request.
+    """
     try:
         detector()
+        if SECOND_OPINION:
+            clip()
     except Exception as exc:
         return JSONResponse({'ok': False, 'detail': str(exc)}, status_code=503)
     return {'ok': True}
@@ -208,10 +214,10 @@ async def classify(request: Request, authorization: str = Header(default='')):
         refined = second_opinion(image)
         if refined is not None:
             # The lower of the two, deliberately. The prompts describe fitness
-            # content specifically, so when CLIP disagrees with a generic
-            # classifier about a gym photo, CLIP is the one that was asked the
-            # right question. It can rescue a false positive; it cannot invent
-            # a removal the first pass did not already suspect.
+            # content specifically, so when CLIP disagrees with the part-level
+            # detector about an ambiguous gym photo, CLIP is the one asked the
+            # narrower question. It can rescue a false positive; it cannot
+            # invent a removal the primary detector did not already suspect.
             categories['explicit'] = min(first, refined)
             logger.info('second opinion: %.2f -> %.2f', first, categories['explicit'])
     # Never log the image, its bytes, or a path that outlives the request. The
