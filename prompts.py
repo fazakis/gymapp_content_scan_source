@@ -17,8 +17,8 @@ replace the primary label mapping and is off by default.
 
 NOT on every upload. The part-level detector is the first pass; this runs only
 on an ambiguous `explicit` score — a few percent of images. It can lower that
-score when a fitness-specific prompt explains the image, but it cannot create
-a removal the primary detector did not already suspect.
+score when a fitness-specific prompt explains the image, or raise a part-level
+false negative into human review. A raise is capped below automatic removal.
 
 ## Tuning
 
@@ -85,3 +85,10 @@ def unsafe_confidence(probabilities) -> float:
     unsafe = values[len(SAFE_PROMPTS):]
     total = sum(float(v) for v in values) or 1.0
     return max(0.0, min(1.0, sum(float(v) for v in unsafe) / total))
+
+
+def merge_second_opinion(first: float, refined: float, *, raise_cap: float) -> float:
+    """Move an ambiguous score both ways, while capping only upward moves."""
+    if refined > first:
+        return min(refined, raise_cap)
+    return refined

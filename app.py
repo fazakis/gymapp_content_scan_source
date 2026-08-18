@@ -18,7 +18,7 @@ from fastapi import FastAPI, Header, HTTPException, Request
 from fastapi.responses import JSONResponse
 
 from labels import categories_from_detections
-from prompts import ALL_PROMPTS, unsafe_confidence
+from prompts import ALL_PROMPTS, merge_second_opinion, unsafe_confidence
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger('content_scan_service')
@@ -39,7 +39,15 @@ _clip = None
 SECOND_OPINION = os.environ.get('CONTENT_SCAN_SECOND_OPINION', '') == '1'
 SECOND_OPINION_LOW = float(os.environ.get('CONTENT_SCAN_SECOND_OPINION_LOW', '0.30'))
 SECOND_OPINION_HIGH = float(os.environ.get('CONTENT_SCAN_SECOND_OPINION_HIGH', '0.97'))
+SECOND_OPINION_RAISE_CAP = float(
+    os.environ.get('CONTENT_SCAN_SECOND_OPINION_RAISE_CAP', '0.75')
+)
 CLIP_MODEL = os.environ.get('CONTENT_SCAN_CLIP_MODEL', 'openai/clip-vit-base-patch32')
+
+if not 0 <= SECOND_OPINION_RAISE_CAP < 0.90:
+    raise RuntimeError(
+        'CONTENT_SCAN_SECOND_OPINION_RAISE_CAP must be between 0 and 0.90'
+    )
 
 
 MODEL_ID = os.environ.get('CONTENT_SCAN_MODEL', 'nudenet')
@@ -213,12 +221,11 @@ async def classify(request: Request, authorization: str = Header(default='')):
     if SECOND_OPINION and SECOND_OPINION_LOW <= first < SECOND_OPINION_HIGH:
         refined = second_opinion(image)
         if refined is not None:
-            # The lower of the two, deliberately. The prompts describe fitness
-            # content specifically, so when CLIP disagrees with the part-level
-            # detector about an ambiguous gym photo, CLIP is the one asked the
-            # narrower question. It can rescue a false positive; it cannot
-            # invent a removal the primary detector did not already suspect.
-            categories['explicit'] = min(first, refined)
+            categories['explicit'] = merge_second_opinion(
+                first,
+                refined,
+                raise_cap=SECOND_OPINION_RAISE_CAP,
+            )
             logger.info('second opinion: %.2f -> %.2f', first, categories['explicit'])
     # Never log the image, its bytes, or a path that outlives the request. The
     # count is enough to tell a working service from a silent one.
