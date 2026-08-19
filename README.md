@@ -3,10 +3,11 @@
 A classifier on its own box. Bytes in, category scores out. No database, no
 credentials, no storage access, nothing persisted.
 
-It lives in this repo but deploys separately. The reason to keep it here is the
-contract: `content_scan/test_service_contract.py` asserts that every category
-this service emits is one the Django policy acts on. Split across two repos,
-renaming a category on one side would leave the other scoring nothing — and a
+This public repository is the exact corresponding source offered by the live
+service under AGPL §13. Production deployment configuration and credentials are
+kept in a separate private repository. The backend contract test asserts that
+every category this service emits is one the Django policy acts on; renaming a
+category on one side would otherwise leave the other scoring nothing — and a
 scanner that finds nothing looks exactly like a clean feed.
 
 ## ⚠️ Licensing — this directory is AGPL-3.0, the rest of the repo is not
@@ -43,7 +44,7 @@ closed software call an AGPL database over a socket.
    source to anyone interacting with this over a network. `GET /source` serves
    that offer, unauthenticated — an offer only visible to holders of our token
    is not an offer. The canonical public mirror is
-   <https://github.com/fazakis/gymapp_content_scan>.
+   <https://github.com/fazakis/gymapp_content_scan_source>.
 
 **This is not legal advice.** The arrangement was chosen on that basis; if you
 intend to rely on it, have a lawyer confirm it.

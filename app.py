@@ -58,7 +58,7 @@ MODEL_ID = os.environ.get('CONTENT_SCAN_MODEL', 'nudenet')
 # reaching the API can see.
 SOURCE_URL = os.environ.get(
     'CONTENT_SCAN_SOURCE_URL',
-    'https://github.com/fazakis/gymapp_content_scan',
+    'https://github.com/fazakis/gymapp_content_scan_source',
 )
 
 
