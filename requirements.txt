@@ -4,7 +4,7 @@
 # this directory.
 fastapi==0.115.6
 uvicorn[standard]==0.34.0
-pillow==11.1.0
+pillow==12.3.0
 
 # ⚠️ AGPL-3.0, and chosen deliberately. It is the only detector that reports
 # WHICH body part and whether it is COVERED — the distinction between a
