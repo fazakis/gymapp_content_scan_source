@@ -2,7 +2,8 @@
 # backend's requirements.txt. The Django side only ever speaks HTTP to this
 # service, and that separation is what keeps the AGPL obligation confined to
 # this directory.
-fastapi==0.115.6
+fastapi==0.143.0
+starlette==1.8.0
 uvicorn[standard]==0.34.0
 pillow==12.3.0
 
